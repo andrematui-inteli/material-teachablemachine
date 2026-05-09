@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teachable Machine — Guia de Referência | Inteli Hackathon</title>
+<style>
+  /* ============ INTELI VISUAL IDENTITY ============ */
+  :root {
+    --inteli-purple-dark: #2D1569;
+    --inteli-purple-mid:  #6030B0;
+    --inteli-purple-light:#9B7AE0;
+    --inteli-purple-pale: #E8DCFF;
+    --inteli-red:         #E04040;
+    --inteli-bg:          #EFEFEF;
+    --inteli-card:        #FFFFFF;
+    --inteli-text:        #1A1535;
+    --inteli-text-mid:    #4A4468;
+    --inteli-text-light:  #8B86A8;
+    --inteli-border:      #DDDDE8;
+    --tool-accent:        #0FA8A3; /* Teachable Machine accent: teal */
+    --tool-accent-2:      #14B8A6; /* TM secondary */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--inteli-bg);
+    color: var(--inteli-text);
+    line-height: 1.65;
+    font-size: 16px;
+  }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; max-width: 1320px; margin: 0 auto; }
+
+  .sidebar {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    background: var(--inteli-purple-dark);
+    color: white; padding: 28px 0;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.06);
+  }
+  .sidebar-brand { padding: 0 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .sidebar-brand .logo {
+    font-weight: 800; font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
+    color: white; display: flex; align-items: center; gap: 6px;
+  }
+  .sidebar-brand .logo::after {
+    content: ""; width: 6px; height: 6px; background: var(--inteli-red); border-radius: 50%;
+  }
+  .sidebar-brand .subtitle { font-size: 11px; opacity: 0.7; margin-top: 6px; letter-spacing: 0.5px; }
+
+  .sidebar-tool {
+    padding: 22px 24px; background: rgba(255,255,255,0.04);
+    border-left: 4px solid var(--tool-accent); margin: 18px 0 8px;
+  }
+  .sidebar-tool .tool-name { font-size: 22px; font-weight: 800; }
+  .sidebar-tool .tool-tag { font-size: 12px; opacity: 0.75; margin-top: 4px; }
+
+  .toc-label {
+    padding: 18px 24px 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; opacity: 0.55;
+  }
+  .toc { list-style: none; }
+  .toc li a {
+    display: block; padding: 8px 24px 8px 24px; color: rgba(255,255,255,0.78);
+    text-decoration: none; font-size: 14px; border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .toc li a:hover { color: white; background: rgba(255,255,255,0.05); border-left-color: var(--tool-accent); }
+  .toc li a.subitem { padding-left: 38px; font-size: 13px; opacity: 0.7; }
+
+  .content { padding: 48px 56px 80px; max-width: 880px; }
+  .content > section { margin-bottom: 56px; scroll-margin-top: 24px; }
+
+  .doc-header {
+    margin-bottom: 40px; padding-bottom: 28px;
+    border-bottom: 1px solid var(--inteli-border);
+  }
+  .doc-header .breadcrumb {
+    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--inteli-text-light); margin-bottom: 12px;
+  }
+  .doc-header h1 {
+    font-size: 44px; font-weight: 800; margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--tool-accent) 0%, var(--tool-accent-2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .doc-header .lead {
+    font-size: 18px; color: var(--inteli-text-mid); font-weight: 400; max-width: 640px;
+  }
+  .doc-header::after {
+    content: ""; display: block; width: 56px; height: 3px;
+    background: var(--inteli-red); margin-top: 24px;
+  }
+
+  h2 {
+    font-size: 28px; font-weight: 800; color: var(--inteli-purple-dark);
+    margin-bottom: 18px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--inteli-purple-pale);
+  }
+  h3 {
+    font-size: 20px; font-weight: 700; color: var(--inteli-purple-mid);
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-size: 16px; font-weight: 700; color: var(--inteli-text);
+    margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  p { margin-bottom: 14px; color: var(--inteli-text); }
+  ul, ol { margin: 10px 0 16px 22px; }
+  li { margin-bottom: 6px; }
+  strong { color: var(--inteli-purple-dark); font-weight: 700; }
+  code {
+    font-family: "SF Mono", "Monaco", "Consolas", monospace;
+    background: var(--inteli-purple-pale); color: var(--inteli-purple-dark);
+    padding: 2px 6px; border-radius: 4px; font-size: 13.5px;
+  }
+  a { color: var(--tool-accent-2); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--tool-accent); }
+
+  .callout {
+    border-radius: 8px; padding: 16px 20px; margin: 18px 0;
+    border-left: 4px solid var(--inteli-purple-mid); background: var(--inteli-card);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  }
+  .callout-title { font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .callout.tip { border-left-color: #0EA86A; }
+  .callout.tip .callout-title { color: #0EA86A; }
+  .callout.warning { border-left-color: #E08D00; background: #FFF8E5; }
+  .callout.warning .callout-title { color: #B86E00; }
+  .callout.danger { border-left-color: var(--inteli-red); background: #FFF0F0; }
+  .callout.danger .callout-title { color: var(--inteli-red); }
+  .callout.info { border-left-color: var(--inteli-purple-mid); }
+  .callout.info .callout-title { color: var(--inteli-purple-mid); }
+
+  .use-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .use-card {
+    background: var(--inteli-card); padding: 20px; border-radius: 10px;
+    border-top: 4px solid; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .use-card.do { border-top-color: #0EA86A; }
+  .use-card.dont { border-top-color: var(--inteli-red); }
+  .use-card h4 { margin-top: 0; font-size: 13px; }
+  .use-card.do h4 { color: #0EA86A; }
+  .use-card.dont h4 { color: var(--inteli-red); }
+  .use-card ul { margin: 8px 0 0 18px; }
+  .use-card li { font-size: 14.5px; }
+
+  pre {
+    background: #1A1535; color: #E8DCFF; padding: 18px 22px;
+    border-radius: 8px; overflow-x: auto; font-size: 13.5px; line-height: 1.55;
+    font-family: "SF Mono", "Monaco", "Consolas", monospace;
+    margin: 14px 0 18px; border-left: 4px solid var(--tool-accent);
+  }
+  pre.prompt {
+    background: linear-gradient(135deg, #2D1569 0%, #1A0E45 100%);
+    color: #E0FFF8; border-left-color: var(--tool-accent);
+  }
+  pre.prompt::before {
+    content: "PROMPT"; display: block; font-size: 10px; font-weight: 800;
+    letter-spacing: 2px; color: var(--tool-accent); margin-bottom: 10px;
+  }
+  pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+
+  .steps { counter-reset: step; list-style: none; margin: 18px 0; padding: 0; }
+  .steps > li {
+    counter-increment: step; position: relative; padding: 16px 16px 16px 60px;
+    background: var(--inteli-card); border-radius: 8px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .steps > li::before {
+    content: counter(step); position: absolute; left: 18px; top: 14px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--inteli-purple-mid); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+  }
+  .steps > li strong:first-child { display: block; margin-bottom: 4px; color: var(--inteli-purple-dark); }
+
+  .ts-item {
+    background: var(--inteli-card); border-radius: 8px; padding: 18px 22px;
+    margin-bottom: 12px; border-left: 4px solid var(--inteli-red);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .ts-item .problem {
+    font-weight: 700; color: var(--inteli-red); font-size: 15px;
+    margin-bottom: 8px; display: flex; align-items: flex-start; gap: 8px;
+  }
+  .ts-item .problem::before { content: "⚠"; flex-shrink: 0; }
+  .ts-item .solution { font-size: 14.5px; color: var(--inteli-text); }
+  .ts-item .solution strong { display: block; margin-bottom: 4px; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 1px; color: var(--inteli-purple-mid); }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  th { background: var(--inteli-purple-dark); color: white; text-align: left; padding: 12px 16px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 12px 16px; border-top: 1px solid var(--inteli-border); font-size: 14.5px; }
+  tbody tr:hover { background: var(--inteli-purple-pale); }
+
+  .quicknav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 24px 0; }
+  .quicknav a {
+    background: var(--inteli-card); padding: 16px 18px; border-radius: 8px;
+    text-decoration: none; color: var(--inteli-text);
+    border: 1px solid var(--inteli-border);
+    transition: all 0.15s; display: block;
+  }
+  .quicknav a:hover { border-color: var(--tool-accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .quicknav a strong { display: block; color: var(--inteli-purple-dark); margin-bottom: 4px; }
+  .quicknav a span { font-size: 13px; color: var(--inteli-text-mid); }
+
+  .doc-footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--inteli-border); font-size: 13px; color: var(--inteli-text-light); }
+  .doc-footer .logo-mini { font-weight: 800; color: var(--inteli-purple-dark); letter-spacing: 1.5px; }
+  .doc-footer .logo-mini::after { content: "•"; color: var(--inteli-red); margin-left: 4px; }
+
+  .project-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+  .project-type {
+    background: var(--inteli-card); padding: 18px; border-radius: 10px;
+    border-top: 4px solid var(--tool-accent); box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .project-type h4 { margin-top: 0; color: var(--tool-accent); }
+
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; max-height: 360px; }
+    .content { padding: 32px 24px 64px; }
+    .doc-header h1 { font-size: 32px; }
+    .use-grid { grid-template-columns: 1fr; }
+    .quicknav { grid-template-columns: 1fr; }
+    .project-types { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    .content { padding: 0; max-width: none; }
+    .callout, .ts-item, pre { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">INTELI HACKATHON</div>
+      <div class="subtitle">Material de Referência · Dia 2</div>
+    </div>
+
+    <div class="sidebar-tool">
+      <div class="tool-name">Teachable Machine</div>
+      <div class="tool-tag">Modelos de IA sem código</div>
+    </div>
+
+    <div class="toc-label">Sumário</div>
+    <ul class="toc">
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#quando-usar">2. Quando usar (e quando não)</a></li>
+      <li><a href="#tipos-projeto">3. Os 3 tipos de projeto</a></li>
+      <li><a href="#antes-comecar">4. Antes de começar</a></li>
+      <li><a href="#fluxo">5. Fluxo geral em 4 etapas</a></li>
+      <li><a href="#image-project">6. Image Project (passo a passo)</a></li>
+      <li><a href="#audio-project">7. Audio Project</a></li>
+      <li><a href="#pose-project">8. Pose Project</a></li>
+      <li><a href="#qualidade">9. Qualidade do modelo</a></li>
+      <li><a href="#exportar">10. Exportando o modelo</a></li>
+      <li><a href="#integrar">11. Integrando com Lovable</a></li>
+      <li><a href="#cenarios">12. Cenários comuns no hackathon</a></li>
+      <li><a href="#troubleshooting">13. Resolvendo problemas</a></li>
+      <li><a href="#etica">14. Ética e limitações</a></li>
+      <li><a href="#recursos">15. Para ir além</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <header class="doc-header">
+      <div class="breadcrumb">Cardápio de Ferramentas · Machine Learning Sem Código</div>
+      <h1>Teachable Machine</h1>
+      <p class="lead">Treine um modelo de IA que reconhece imagens, sons ou poses corporais — direto no navegador, sem escrever uma linha de código. Em poucos minutos você tem um classificador funcionando.</p>
+    </header>
+
+    <div class="quicknav">
+      <a href="#fluxo"><strong>⚙ Fluxo geral</strong><span>Como qualquer projeto funciona</span></a>
+      <a href="#image-project"><strong>📷 Treinar com imagens</strong><span>O caso mais comum</span></a>
+      <a href="#qualidade"><strong>🎯 Modelo errando muito?</strong><span>Como melhorar a precisão</span></a>
+      <a href="#troubleshooting"><strong>🩹 Algo travou?</strong><span>Pula para os problemas comuns</span></a>
+    </div>
+
+    <!-- ============ 1. VISÃO GERAL ============ -->
+    <section id="visao-geral">
+      <h2>1. Visão geral</h2>
+      <p>Teachable Machine é uma ferramenta gratuita do Google que permite <strong>treinar modelos de classificação</strong> sem programar. Você mostra exemplos para o computador, ele aprende a diferenciá-los e pronto: tem um modelo que classifica entradas novas em tempo real.</p>
+
+      <p>É um exemplo prático de <strong>aprendizado supervisionado</strong>: você ensina por exemplos. Se quiser que o modelo distinga "cachorro" de "gato", você dá várias fotos rotuladas como cachorro e várias rotuladas como gato. O modelo aprende os padrões e generaliza.</p>
+
+      <div class="callout info">
+        <div class="callout-title">No contexto do hackathon</div>
+        Teachable Machine é a ferramenta certa quando o coração do produto é <strong>"identificar algo automaticamente"</strong>: um lixo, um gesto, uma palavra falada, uma postura. Não substitui o app — geralmente você combina o modelo com uma tela em outra ferramenta (Lovable) ou apresenta o modelo rodando em uma página do próprio Teachable Machine.
+      </div>
+
+      <h3>O que é (e o que não é)</h3>
+      <ul>
+        <li><strong>É:</strong> uma ferramenta para criar classificadores que rodam no navegador.</li>
+        <li><strong>Não é:</strong> um app pronto para o usuário final — você ainda precisa de uma interface.</li>
+        <li><strong>É:</strong> gratuito e sem cadastro obrigatório (você só precisa de conta Google se quiser salvar projetos no Drive).</li>
+        <li><strong>Não é:</strong> um modelo de geração de imagens, texto ou áudio. Só classificação.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 2. QUANDO USAR ============ -->
+    <section id="quando-usar">
+      <h2>2. Quando usar (e quando não)</h2>
+
+      <div class="use-grid">
+        <div class="use-card do">
+          <h4>✓ Use Teachable Machine quando…</h4>
+          <ul>
+            <li>O produto precisa <strong>identificar algo</strong> visual, sonoro ou postural</li>
+            <li>Você consegue <strong>coletar exemplos rotulados</strong> em poucos minutos</li>
+            <li>As classes são <strong>visualmente/auditivamente distintas</strong> entre si</li>
+            <li>Demo ao vivo com webcam ou microfone faz sentido para o seu pitch</li>
+          </ul>
+        </div>
+        <div class="use-card dont">
+          <h4>✗ Não use Teachable Machine se…</h4>
+          <ul>
+            <li>Seu produto é só uma tela com lógica → use Lovable</li>
+            <li>Você precisa que o modelo <strong>gere</strong> algo (texto, imagem) → use APIs de IA generativa via Lovable</li>
+            <li>As classes são quase iguais (ex: distinguir 50 espécies de cogumelo) — Teachable Machine não tem capacidade pra isso</li>
+            <li>Você precisa de altíssima precisão (decisão médica, segurança crítica) — para isso, modelos profissionais</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Combinação poderosa</div>
+        <strong>Teachable Machine + Lovable</strong> funciona muito bem: você treina o modelo, exporta como TensorFlow.js e pede no Lovable para hospedar uma tela que use o modelo. Aí o usuário tem app e IA juntos. É um caminho mais avançado — só vá por ele se o squad estiver confortável.
+      </div>
+    </section>
+
+    <!-- ============ 3. TIPOS DE PROJETO ============ -->
+    <section id="tipos-projeto">
+      <h2>3. Os 3 tipos de projeto</h2>
+      <p>Quando você abre o Teachable Machine, ele pergunta qual tipo de projeto criar. Escolha de acordo com o sentido que seu produto vai usar.</p>
+
+      <div class="project-types">
+        <div class="project-type">
+          <h4>📷 Image</h4>
+          <p>Classifica <strong>imagens estáticas ou frames de webcam</strong>. O mais usado e versátil. Bom para: tipo de objeto, expressão facial, gesto com a mão, postura geral, classificar lixo, identificar planta.</p>
+        </div>
+        <div class="project-type">
+          <h4>🎤 Audio</h4>
+          <p>Classifica <strong>sons curtos</strong> (~1 segundo). Útil para: palavras-chave faladas, sons de animais, alarmes, instrumentos musicais, palmas vs assobios. Sempre exige um background "ruído ambiente" como classe de calibração.</p>
+        </div>
+        <div class="project-type">
+          <h4>🤸 Pose</h4>
+          <p>Classifica <strong>posturas corporais</strong> usando os pontos-chave do esqueleto (ombros, cotovelos, joelhos, etc.). Ideal para: exercícios físicos, postura ergonômica, jogos baseados em movimento, libras simples.</p>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Não dá pra misturar</div>
+        Cada projeto trabalha com <strong>um único tipo de entrada</strong>. Se seu produto precisa entender imagem E som ao mesmo tempo, são dois modelos separados — e juntar isso costuma ser mais complexo do que cabe em um hackathon.
+      </div>
+    </section>
+
+    <!-- ============ 4. ANTES DE COMEÇAR ============ -->
+    <section id="antes-comecar">
+      <h2>4. Antes de começar</h2>
+
+      <h3>Acesso</h3>
+      <p>Acesse <a href="https://teachablemachine.withgoogle.com" target="_blank">teachablemachine.withgoogle.com</a> e clique em <strong>"Get Started"</strong>. Não precisa criar conta — só se quiser <strong>salvar o projeto na nuvem (Google Drive)</strong>, aí entre com Google.</p>
+
+      <h3>O que ter em mãos</h3>
+      <ul>
+        <li>Um <strong>computador com webcam</strong> (para Image e Pose) ou <strong>microfone</strong> (para Audio)</li>
+        <li>Lista de <strong>2 a 8 classes</strong> que você quer distinguir (mais que isso vira ruim)</li>
+        <li>Pelo menos <strong>30 exemplos por classe</strong> em mente — tempo, fontes, fundos diferentes</li>
+        <li>Um nome para o projeto e ideia de onde vai usar (link, embed, tela em outro app)</li>
+      </ul>
+
+      <h3>Navegador</h3>
+      <p>Funciona melhor em <strong>Chrome, Edge ou Firefox atualizados</strong>. Safari às vezes dá problema com webcam/microfone. Tudo roda no navegador — seus dados não saem do computador (privacidade preservada).</p>
+    </section>
+
+    <!-- ============ 5. FLUXO GERAL ============ -->
+    <section id="fluxo">
+      <h2>5. Fluxo geral em 4 etapas</h2>
+      <p>Independente do tipo de projeto, a lógica é a mesma:</p>
+
+      <ol class="steps">
+        <li><strong>Definir as classes</strong> Você cria caixas, uma para cada coisa que quer distinguir. Dê nomes claros (em vez de "Class 1", coloque "Lixo orgânico", "Plástico", "Metal"). Pode adicionar quantas quiser, mas mantenha entre 2 e 8 para resultados bons.</li>
+        <li><strong>Coletar exemplos</strong> Para cada classe, você grava (webcam/microfone) ou faz upload de exemplos. Quanto mais exemplos variados, melhor o modelo. <strong>Mínimo prático: 30-50 por classe</strong>.</li>
+        <li><strong>Treinar</strong> Clique em "Train Model". O treinamento acontece <strong>no seu próprio navegador</strong> (não envia dados para servidor). Leva de poucos segundos a 1-2 minutos dependendo do volume.</li>
+        <li><strong>Testar e exportar</strong> Antes de exportar, teste o modelo na seção "Preview" ao lado. Se estiver bom, clique em "Export Model" e escolha o formato (TensorFlow.js para web é o mais comum).</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="callout-title">Itere rápido</div>
+        Você pode <strong>retreinar quantas vezes quiser</strong>. Adicione mais exemplos, retreine, teste, repita. Cada ciclo leva poucos minutos. Não tente acertar na primeira — o ciclo de melhorar está na essência.
+      </div>
+    </section>
+
+    <!-- ============ 6. IMAGE PROJECT ============ -->
+    <section id="image-project">
+      <h2>6. Image Project (passo a passo)</h2>
+      <p>É o tipo mais usado. Aqui o passo a passo detalhado.</p>
+
+      <h3>Passo 1 — Criar o projeto</h3>
+      <p>Na tela inicial: <strong>New Project → Image Project → Standard image model</strong>. (A opção "Embedded" é para microcontroladores e provavelmente não cabe no hackathon.)</p>
+
+      <h3>Passo 2 — Configurar as classes</h3>
+      <ol>
+        <li>Renomeie "Class 1" e "Class 2" com nomes descritivos clicando no ícone de lápis.</li>
+        <li>Adicione mais classes com o botão "Add a class" se precisar.</li>
+        <li><strong>Recomendação:</strong> mantenha 2 a 6 classes. Mais que isso aumenta muito o tempo de coleta e a chance de erro.</li>
+      </ol>
+
+      <h3>Passo 3 — Coletar imagens</h3>
+      <p>Para cada classe, você tem duas opções:</p>
+      <ul>
+        <li><strong>Webcam</strong> — clica e segura "Hold to Record" para gravar várias imagens rapidamente. O Teachable Machine captura múltiplos frames por segundo.</li>
+        <li><strong>Upload</strong> — arraste arquivos do computador, ou faça upload de uma pasta inteira de uma vez.</li>
+      </ul>
+
+      <h4>Quantas imagens coletar?</h4>
+      <table>
+        <thead>
+          <tr><th>Quantidade</th><th>Resultado esperado</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Menos de 20</td><td>Funciona apenas em condições idênticas às do treino</td></tr>
+          <tr><td>30 a 50</td><td>Funciona razoavelmente. <strong>Mínimo aceitável.</strong></td></tr>
+          <tr><td>80 a 150</td><td>Funciona bem em variações moderadas. <strong>Sweet spot do hackathon.</strong></td></tr>
+          <tr><td>200+</td><td>Funciona muito bem. Limite prático para tempo de hackathon.</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Variar é mais importante que quantidade</h4>
+      <p>Para cada classe, varie:</p>
+      <ul>
+        <li><strong>Ângulo</strong> — frente, lados, leve inclinação</li>
+        <li><strong>Distância</strong> — mais perto, mais longe da câmera</li>
+        <li><strong>Iluminação</strong> — luz do dia, luz artificial, mais escuro</li>
+        <li><strong>Fundo</strong> — diferente em cada bloco de imagens</li>
+        <li><strong>Pessoas/objetos diferentes</strong> — se aplicável</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Erro comum: fundo viciado</div>
+        Se todas as suas imagens da classe "maçã" têm a mesma mesa branca de fundo, o modelo aprende que <strong>"mesa branca = maçã"</strong>. Quando você testar com fundo diferente, ele erra. Sempre <strong>varie o fundo</strong> ou use a classe "background"/"vazio" como referência.
+      </div>
+
+      <h3>Passo 4 — Treinar</h3>
+      <ol>
+        <li>Clique em <strong>"Train Model"</strong>.</li>
+        <li><strong>Não troque de aba do navegador</strong> durante o treino — pode pausar.</li>
+        <li>Leva ~30 segundos a 2 minutos. Aparece uma barra de progresso.</li>
+      </ol>
+
+      <h3>Passo 5 — Testar no Preview</h3>
+      <p>Logo ao lado do botão de treino, aparece o <strong>Preview</strong>. Ele mostra a webcam em tempo real e o que o modelo está prevendo, com porcentagem de confiança. Mostre objetos das suas classes para ver se acerta.</p>
+
+      <p>Teste especialmente com:</p>
+      <ul>
+        <li><strong>Variações que você NÃO usou no treino</strong> (fundo novo, iluminação diferente)</li>
+        <li><strong>Casos limítrofes</strong> — coisas que poderiam ser confundidas</li>
+        <li><strong>Coisas que não são nenhuma classe</strong> — para ver o quão "confiante" o modelo fica em algo que não conhece</li>
+      </ul>
+
+      <div class="callout info">
+        <div class="callout-title">Treinou mas não está bom?</div>
+        Não retreine do zero. Volte para a coleta, <strong>adicione mais exemplos das classes problemáticas</strong> (especialmente nos casos onde está errando) e clique em Train Model novamente. O modelo aprende rápido com correções direcionadas.
+      </div>
+    </section>
+
+    <!-- ============ 7. AUDIO PROJECT ============ -->
+    <section id="audio-project">
+      <h2>7. Audio Project</h2>
+      <p>Para classificar sons curtos. Tem uma particularidade: sempre começa com uma classe obrigatória chamada <strong>"Background Noise"</strong>.</p>
+
+      <h3>Background Noise é obrigatório</h3>
+      <p>Antes de treinar suas classes, você precisa gravar pelo menos <strong>20 segundos de "silêncio"</strong> (o som ambiente do lugar onde o modelo vai rodar). Isso é a calibração: o modelo precisa saber o que é "nada acontecendo" para distinguir de algo acontecendo.</p>
+
+      <p>Se o seu projeto vai rodar em sala de aula, grave o som da sala vazia. Se em casa, grave o som da casa. Sons ambientes diferentes confundem o modelo.</p>
+
+      <h3>Coletando classes</h3>
+      <ul>
+        <li>Cada classe precisa de pelo menos <strong>8 amostras de ~1 segundo cada</strong>. Funciona melhor com 20+ amostras.</li>
+        <li>Sons curtos e distintos funcionam muito melhor que palavras longas ou frases.</li>
+        <li>Bons exemplos: "ai!", palmas, assobio, miado, "abre", "fecha", "liga", "desliga".</li>
+        <li>Maus exemplos: frases longas, músicas inteiras, sons muito parecidos entre si.</li>
+      </ul>
+
+      <h3>Dicas específicas</h3>
+      <ul>
+        <li>Grave sempre na <strong>mesma distância do microfone</strong> que o usuário final vai usar.</li>
+        <li>Varie ligeiramente: tom de voz, intensidade, sotaque (se mais de uma pessoa for usar).</li>
+        <li>Em ambiente barulhento, grave o ruído de fundo daquele ambiente como background.</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">Boa aplicação no hackathon</div>
+        Audio Project funciona bem como <strong>"controle por voz simples"</strong>: o usuário fala uma palavra-chave e o app reage. Mais simples que um assistente de verdade, mas suficiente para uma demo no Demo Day.
+      </div>
+    </section>
+
+    <!-- ============ 8. POSE PROJECT ============ -->
+    <section id="pose-project">
+      <h2>8. Pose Project</h2>
+      <p>Reconhece posturas corporais. Em vez de olhar pixels, usa os <strong>pontos-chave do esqueleto</strong> (cabeça, ombros, cotovelos, pulsos, quadril, joelhos, tornozelos).</p>
+
+      <h3>Por que isso é uma vantagem</h3>
+      <p>Como ele trabalha com pontos do esqueleto e não com a imagem direta, o modelo é menos sensível a:</p>
+      <ul>
+        <li>Cor da roupa</li>
+        <li>Iluminação</li>
+        <li>Fundo da cena</li>
+      </ul>
+      <p>Em compensação, exige que a pessoa esteja <strong>com o corpo bem visível</strong> para a câmera (preferencialmente da cabeça aos joelhos).</p>
+
+      <h3>Quantas amostras coletar</h3>
+      <ul>
+        <li>Mínimo: <strong>50 amostras por classe</strong>.</li>
+        <li>Idealmente: <strong>100-200 amostras por classe</strong>, com pessoas diferentes se possível.</li>
+      </ul>
+
+      <h3>Boas aplicações</h3>
+      <ul>
+        <li>Detector de postura (boa/ruim ao estudar)</li>
+        <li>Contador de exercícios (agachamento, polichinelo)</li>
+        <li>Jogos baseados em movimento</li>
+        <li>Reconhecimento de sinais simples (mãos para cima, mãos abertas, parado)</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Limitação</div>
+        Pose Project trabalha melhor com <strong>uma pessoa por vez</strong> no quadro. Se houver várias pessoas, o desempenho cai bastante.
+      </div>
+    </section>
+
+    <!-- ============ 9. QUALIDADE ============ -->
+    <section id="qualidade">
+      <h2>9. Qualidade do modelo</h2>
+      <p>Como saber se seu modelo está bom o suficiente para o Demo Day? E como melhorar quando não está?</p>
+
+      <h3>Sinais de modelo bom</h3>
+      <ul>
+        <li>No Preview, a classe correta aparece com <strong>confiança acima de 80%</strong> na maioria dos testes.</li>
+        <li>Quando você mostra algo <strong>fora das classes</strong>, a confiança fica espalhada (40/30/30) em vez de 95% em uma errada.</li>
+        <li>Funciona em <strong>condições ligeiramente diferentes</strong> do treino (luz, fundo, ângulo).</li>
+        <li>Confunde casos esperados (objetos parecidos), não casos óbvios.</li>
+      </ul>
+
+      <h3>Sinais de modelo ruim e como consertar</h3>
+
+      <table>
+        <thead><tr><th>Sintoma</th><th>Causa provável</th><th>O que fazer</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Acerta no treino, erra em qualquer variação</td>
+            <td>Falta de variedade nos exemplos</td>
+            <td>Adicione exemplos com fundos, ângulos e iluminação diferentes</td>
+          </tr>
+          <tr>
+            <td>Sempre prevê a mesma classe</td>
+            <td>Desbalanço (uma classe tem muito mais exemplos)</td>
+            <td>Iguale o número de exemplos entre classes</td>
+          </tr>
+          <tr>
+            <td>Confunde duas classes específicas</td>
+            <td>Classes muito parecidas ou exemplos sobrepostos</td>
+            <td>Refaça os exemplos das duas classes problemáticas garantindo distinção visual clara</td>
+          </tr>
+          <tr>
+            <td>Confiança nunca passa de 60%</td>
+            <td>Poucos exemplos no geral</td>
+            <td>Aumente o volume — mire em 100+ por classe</td>
+          </tr>
+          <tr>
+            <td>Funcionou no Preview mas não no app exportado</td>
+            <td>Iluminação/câmera diferente</td>
+            <td>Re-treine com exemplos coletados na câmera/ambiente onde o app vai rodar</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Configurações avançadas (opcional)</h3>
+      <p>Em "Advanced", você pode ajustar:</p>
+      <ul>
+        <li><strong>Epochs</strong> — quantas vezes o modelo vê todos os exemplos. Padrão é 50. Subir pode melhorar precisão, mas demora mais e pode "viciar" no treino.</li>
+        <li><strong>Batch size</strong> — quantos exemplos processa por vez. Padrão geralmente está bom.</li>
+        <li><strong>Learning rate</strong> — quão rápido o modelo aprende. Mexer aqui é avançado; só mude se souber o que está fazendo.</li>
+      </ul>
+      <p>Para o hackathon, <strong>os valores padrão funcionam bem em quase todos os casos</strong>. Foque em coletar bons exemplos antes de mexer aqui.</p>
+    </section>
+
+    <!-- ============ 10. EXPORTAR ============ -->
+    <section id="exportar">
+      <h2>10. Exportando o modelo</h2>
+      <p>Treinou e está bom? Hora de exportar para usar fora do Teachable Machine.</p>
+
+      <h3>Os 3 formatos de exportação</h3>
+
+      <table>
+        <thead><tr><th>Formato</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>TensorFlow.js</strong></td><td>Para usar em <strong>app web</strong> (Lovable, qualquer site). Mais comum no hackathon.</td></tr>
+          <tr><td><strong>TensorFlow</strong></td><td>Para usar em <strong>Python</strong>. Útil em scripts ou backend pesado. Raro no hackathon.</td></tr>
+          <tr><td><strong>TensorFlow Lite</strong></td><td>Para usar em <strong>celular ou microcontrolador</strong>. Útil se for embarcar em um device físico.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Caminho rápido: Hosted Model</h3>
+      <p>O caminho mais fácil é o <strong>Upload my model</strong> dentro de TensorFlow.js. O Teachable Machine hospeda gratuitamente e te dá uma URL pública assim:</p>
+
+      <pre><code>https://teachablemachine.withgoogle.com/models/AbCdEfGh1/</code></pre>
+
+      <p>Essa URL é tudo que você precisa para usar o modelo em qualquer lugar. Guarde-a com carinho.</p>
+
+      <h3>Caminho alternativo: Download</h3>
+      <p>Se preferir ter os arquivos localmente (e não depender de internet), clique em <strong>Download my model</strong> e baixa um ZIP com 3 arquivos:</p>
+      <ul>
+        <li><code>model.json</code> — a "receita" do modelo</li>
+        <li><code>metadata.json</code> — informação sobre as classes</li>
+        <li><code>weights.bin</code> — os "pesos" (o que o modelo aprendeu)</li>
+      </ul>
+      <p>Você precisa hospedar esses 3 juntos em algum lugar acessível por URL. Para o hackathon, o caminho hospedado é mais prático.</p>
+
+      <div class="callout tip">
+        <div class="callout-title">Dica de demo</div>
+        Mesmo se você não conseguir integrar com Lovable a tempo, o Teachable Machine te dá uma <strong>página de teste pública</strong> via "Get the shareable link" no menu de exportação. Você pode mostrar essa página ao vivo no Demo Day. Não fica tão polido quanto um app, mas funciona.
+      </div>
+    </section>
+
+    <!-- ============ 11. INTEGRAR ============ -->
+    <section id="integrar">
+      <h2>11. Integrando com Lovable</h2>
+      <p>Caminho para combinar Teachable Machine + Lovable em um único produto. Avançado, mas viável em hackathon se o squad estiver confortável.</p>
+
+      <h3>O que você precisa antes de tudo</h3>
+      <ul>
+        <li>O modelo treinado e <strong>hospedado</strong>, com a URL em mãos (ex: <code>https://teachablemachine.withgoogle.com/models/AbCdEf/</code>)</li>
+        <li>Um projeto Lovable iniciado</li>
+      </ul>
+
+      <h3>Prompt para o Lovable</h3>
+      <p>Seguindo o padrão Contexto + Objetivo + Restrições:</p>
+
+      <pre class="prompt"><code>Quero adicionar uma tela ao app que use a câmera do navegador
+para reconhecer [O QUE]. O modelo já está treinado no
+Teachable Machine e fica nesta URL:
+
+https://teachablemachine.withgoogle.com/models/[ID]/
+
+Use a biblioteca tmImage do Teachable Machine para carregar
+o modelo, abra a webcam, mostre as previsões em tempo real
+abaixo da câmera com a porcentagem de confiança.
+
+Quando a confiança da classe "[CLASSE_ALVO]" passar de 85%,
+exibe a mensagem "[MENSAGEM]" e [O QUE FAZER].
+
+Adiciona um botão "Parar câmera" para liberar a webcam.</code></pre>
+
+      <p>O Lovable conhece a biblioteca <code>tmImage</code> e consegue gerar o código integrando. Pode ser preciso uma ou duas iterações para ajustar.</p>
+
+      <div class="callout warning">
+        <div class="callout-title">Permissão de câmera</div>
+        O navegador vai pedir permissão para acessar a webcam quando o usuário entrar na tela. Garanta que o app explica isso claramente — se não, o usuário nega e o modelo não funciona.
+      </div>
+    </section>
+
+    <!-- ============ 12. CENÁRIOS ============ -->
+    <section id="cenarios">
+      <h2>12. Cenários comuns no hackathon</h2>
+
+      <h3>Cenário A — Identificador de descarte correto</h3>
+      <p>O usuário aponta a câmera para um item, o app diz se é orgânico, plástico, papel, metal, eletrônico ou pilha.</p>
+      <ul>
+        <li><strong>Tipo:</strong> Image Project</li>
+        <li><strong>Classes:</strong> 4-6 (orgânico, plástico, papel, metal, e-lixo, pilha)</li>
+        <li><strong>Coleta:</strong> 80-120 fotos por classe, com objetos reais variados</li>
+        <li><strong>Demo Day:</strong> apresenta a câmera reconhecendo objetos que você trouxe</li>
+      </ul>
+
+      <h3>Cenário B — Acessibilidade por gestos</h3>
+      <p>App de comunicação para pessoas com dificuldade de fala: o usuário faz um gesto e o app fala uma frase.</p>
+      <ul>
+        <li><strong>Tipo:</strong> Pose Project ou Image Project</li>
+        <li><strong>Classes:</strong> 4-6 gestos distintos (mãos para cima, mão fechada, mão aberta, ok, etc.)</li>
+        <li><strong>Coleta:</strong> 100+ amostras por gesto, com pessoas diferentes</li>
+        <li><strong>Demo Day:</strong> apresenta os gestos sendo reconhecidos e gerando frases</li>
+      </ul>
+
+      <h3>Cenário C — Coach de postura</h3>
+      <p>App que avisa quando o usuário está com postura ruim ao estudar.</p>
+      <ul>
+        <li><strong>Tipo:</strong> Pose Project</li>
+        <li><strong>Classes:</strong> 2-3 (boa postura, postura curvada, ausente)</li>
+        <li><strong>Coleta:</strong> 200 amostras por classe, várias pessoas</li>
+        <li><strong>Demo Day:</strong> webcam ao vivo durante o pitch, com alerta quando detectar postura ruim</li>
+      </ul>
+
+      <h3>Cenário D — Comando de voz simples</h3>
+      <p>Controle de algo (luz, página, jogo) por palavras-chave.</p>
+      <ul>
+        <li><strong>Tipo:</strong> Audio Project</li>
+        <li><strong>Classes:</strong> Background + 3-5 comandos curtos</li>
+        <li><strong>Coleta:</strong> 30+ amostras por comando, com 2-3 pessoas falando</li>
+        <li><strong>Demo Day:</strong> demo ao vivo dando comandos</li>
+      </ul>
+
+      <h3>Cenário E — Identificador de espécies/itens didáticos</h3>
+      <p>App educativo: aponta a câmera para [planta/animal/objeto] e ele te ensina sobre.</p>
+      <ul>
+        <li><strong>Tipo:</strong> Image Project</li>
+        <li><strong>Classes:</strong> 3-6 itens bem distintos entre si</li>
+        <li><strong>Coleta:</strong> imagens variadas (Google Imagens funciona como ponto de partida)</li>
+        <li><strong>Combinação:</strong> exporta para Lovable, que mostra a info detalhada da classe identificada</li>
+      </ul>
+    </section>
+
+    <!-- ============ 13. TROUBLESHOOTING ============ -->
+    <section id="troubleshooting">
+      <h2>13. Resolvendo problemas</h2>
+
+      <div class="ts-item">
+        <div class="problem">A webcam não aparece / "Permissão negada"</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Clique no ícone de cadeado (à esquerda da URL no navegador) e habilite a câmera. Recarregue a página. Confirme que o navegador é Chrome, Edge ou Firefox.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">Treinei mas o modelo prevê sempre a mesma classe</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Provavelmente uma classe tem muito mais exemplos que as outras. Conte: tente igualar a quantidade. Se uma classe estiver muito acima (ex: 200 vs 30), apague exemplos da maior ou colete mais nas menores até ficarem balanceadas.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">Acerta no laboratório mas erra na sala de aula</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          O modelo aprendeu padrões do ambiente do treino (iluminação, fundo). Colete <strong>mais exemplos no ambiente onde vai rodar</strong> e retreine. Variar exemplos de propósito é a chave.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">Pose Project não está reconhecendo o esqueleto</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Posicione a webcam de modo que <strong>todo o corpo (cabeça aos joelhos) apareça</strong>. Roupa muito larga e fundo bagunçado atrapalham. Ilumine bem o ambiente.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">Audio Project tem alta confiança no Background Noise mesmo quando falo</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          O microfone pode estar com volume baixo, ou o background tem muito ruído parecido com a sua voz. Aproxime a boca do microfone e regrave o background no mesmo ambiente em silêncio real.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">"Train Model" travou no meio</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Você provavelmente trocou de aba durante o treino. <strong>Mantenha a aba ativa</strong> e tente novamente. Se persistir, recarregue a página (suas amostras ficam salvas se você estiver logado e com auto-save) ou reduza a quantidade de classes/exemplos.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">Adicionei mais exemplos mas o modelo não melhorou</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Lembre de <strong>clicar em Train Model novamente</strong>. Adicionar exemplos sem retreinar não muda nada. Verifique também se os novos exemplos estão na classe certa.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">Perdi todo o trabalho ao fechar a aba</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          O Teachable Machine não salva automaticamente — entre com Google e use <strong>"Save project to Drive"</strong>. Faça isso a cada milestone. Como alternativa, <strong>"Download project as file"</strong> baixa um arquivo .tm que você pode reabrir depois.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">O modelo exportado não funciona no Lovable</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Confira que (1) você usou TensorFlow.js, (2) escolheu "Upload my model" para hospedar, (3) está usando a URL completa hospedada (não os arquivos baixados sem hospedagem), e (4) testou a URL em <code>{URL}/metadata.json</code> direto no navegador — se voltar JSON, está funcionando. Mostre a URL e o erro para o Lovable em Chat Mode antes de gastar créditos em uma geração.
+        </div>
+      </div>
+
+      <div class="ts-item">
+        <div class="problem">A confiança fica oscilando muito (70% / 30% / 70% / 30%)</div>
+        <div class="solution">
+          <strong>Solução:</strong>
+          Modelo está em dúvida entre duas classes. Adicione exemplos das duas classes mostrando claramente a diferença, e considere se elas são realmente distinguíveis ou se é um caso onde o modelo nunca vai conseguir separar bem.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 14. ÉTICA ============ -->
+    <section id="etica">
+      <h2>14. Ética e limitações</h2>
+      <p>Trabalhar com IA, mesmo no hackathon, vem com responsabilidades. A banca tende a valorizar squads que demonstram consciência sobre isso.</p>
+
+      <h3>Vieses são inevitáveis se você não tomar cuidado</h3>
+      <p>Se todos os exemplos da sua classe "rosto feliz" forem de pessoas brancas e jovens, o modelo vai funcionar pior em pessoas de outras etnias e idades. Isso não é "culpa do modelo" — é da escolha de exemplos.</p>
+      <p>Sempre que o produto envolver reconhecimento de pessoas:</p>
+      <ul>
+        <li>Use <strong>exemplos diversos</strong> (etnia, idade, gênero, características físicas)</li>
+        <li>Teste explicitamente com pessoas que <strong>não estavam no treino</strong></li>
+        <li>Mencione no pitch as <strong>limitações conhecidas</strong> e como abordaria isso em um produto real</li>
+      </ul>
+
+      <h3>Privacidade dos exemplos</h3>
+      <p>Se você gravou colegas no treinamento, pergunte se eles autorizam o uso. Para o Demo Day, considere usar <strong>apenas membros do squad</strong> nos exemplos, ou objetos em vez de pessoas.</p>
+
+      <h3>O que o modelo NÃO sabe</h3>
+      <p>Teachable Machine não "entende" o que é uma maçã — ele só sabe que pixels com certo padrão se parecem com os exemplos que você rotulou de "maçã". Isso significa que:</p>
+      <ul>
+        <li>Pode confundir uma <strong>foto de maçã na tela</strong> com uma maçã real</li>
+        <li>Pode falhar em maçãs muito diferentes das do treino (verdes, mordidas, partidas)</li>
+        <li>Não generaliza para conceitos que você não ensinou</li>
+      </ul>
+      <p>Saber comunicar essas limitações no pitch demonstra maturidade — a banca aprecia.</p>
+    </section>
+
+    <!-- ============ 15. RECURSOS ============ -->
+    <section id="recursos">
+      <h2>15. Para ir além</h2>
+
+      <h3>Documentação oficial</h3>
+      <ul>
+        <li><a href="https://teachablemachine.withgoogle.com" target="_blank">teachablemachine.withgoogle.com</a> — site oficial</li>
+        <li><a href="https://teachablemachine.withgoogle.com/faq" target="_blank">FAQ oficial</a> — perguntas frequentes</li>
+        <li><a href="https://github.com/googlecreativelab/teachablemachine-community" target="_blank">GitHub do projeto</a> — exemplos de código para integração</li>
+      </ul>
+
+      <h3>Para entender o que está acontecendo por baixo</h3>
+      <ul>
+        <li><strong>Aprendizado supervisionado</strong> — o paradigma do Teachable Machine</li>
+        <li><strong>Transfer learning</strong> — por que o treino é tão rápido (ele usa um modelo pré-treinado e só ajusta para as suas classes)</li>
+        <li><strong>Overfitting</strong> — quando o modelo decora os exemplos em vez de aprender o padrão</li>
+      </ul>
+
+      <h3>Próximos passos depois do hackathon</h3>
+      <ul>
+        <li><strong>Lobe</strong> (do antigo Microsoft) e <strong>HuggingFace AutoTrain</strong> — alternativas mais avançadas, ainda sem código</li>
+        <li><strong>TensorFlow / Keras em Python</strong> — quando você quiser controle total</li>
+        <li><strong>APIs prontas</strong> (Google Vision, AWS Rekognition, OpenAI) — para tarefas que exigem modelos muito maiores</li>
+      </ul>
+    </section>
+
+    <footer class="doc-footer">
+      <div class="logo-mini">INTELI HACKATHON · STARTUP EM 12H</div>
+      <p style="margin-top: 6px;">Material de referência para uso durante o Hack Time do Dia 2. Disponível na Adalove.</p>
+    </footer>
+
+  </main>
+</div>
+
+
+<script>
+  // Fix âncoras dentro do iframe de prévia do Claude:
+  // intercepta cliques em links #ancora e faz scroll manual via JS,
+  // evitando que o navegador interprete como navegação externa.
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    var id = link.getAttribute("href").slice(1);
+    if (!id) return;
+    var target = document.getElementById(id);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+</script>
+</body>
+</html>
